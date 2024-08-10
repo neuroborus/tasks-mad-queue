@@ -1,0 +1,47 @@
+{
+  "name": "tasks-mad-queue",
+  "version": "0.0.1",
+  "description": "A library that provides queue for async tasks",
+  "main": "tasks-mad-queue",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neuroborus/tasks-mad-queue.git"
+  },
+  "types": "entities",
+  "engines": {
+    "node": ">=20"
+  },
+  "author": {
+    "name": "neuroborus",
+    "email": "mihasso@protonmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.1.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^29.7.0",
+    "prettier": "^2.3.2",
+    "ts-jest": "^29.2.4",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.4"
+  },
+  "keywords": [
+    "queue",
+    "tasks queue",
+    "node",
+    "javascript",
+    "typescript",
+    "async",
+    "async awaited tasks queue",
+    "await"
+  ]
+}
