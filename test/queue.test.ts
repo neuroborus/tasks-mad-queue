@@ -1,7 +1,6 @@
 import { setTimeout } from "node:timers/promises";
 
-import { TasksQueueService } from '../queue';
-import { ITasksQueueLogger } from '../entities';
+import { TasksQueueService, ITasksQueueLogger } from '../src';
 
 let errorsThrow = 0;
 let errorsCatch = 0;

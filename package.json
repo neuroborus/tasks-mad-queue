@@ -2,15 +2,20 @@
   "name": "tasks-mad-queue",
   "version": "0.0.1",
   "description": "A library that provides queue for async tasks",
-  "main": "tasks-mad-queue",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "scripts": {
+    "build": "tsup",
     "test": "jest"
   },
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/neuroborus/tasks-mad-queue.git"
   },
-  "types": "entities",
   "engines": {
     "node": ">=20"
   },
