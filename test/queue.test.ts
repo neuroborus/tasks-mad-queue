@@ -4,10 +4,11 @@ import { TasksQueueService, ITasksQueueLogger } from '../src';
 
 let errorsThrow = 0;
 let errorsCatch = 0;
+let fatalCount = 0;
 
 class WrappedLogger implements ITasksQueueLogger {
     log(message: string): void { console.log(message) };
-    fatal(message: string): void { console.error(message) };
+    fatal(message: string): void { fatalCount += 1; console.error(message); };
     error(message: string): void { errorsCatch +=1 };
     warn(message: string): void { console.warn(message) };
     trace(message: string): void { console.debug(message) };
@@ -113,4 +114,28 @@ test('Finally', async () => {
     await Queue.wait();
     console.log(awaited);
     expect(errorsCatch).toBe(errorsThrow);
+    expect(fatalCount).toBe(0);
+}, selectionSize * 1000);
+
+
+test('Promises', async () => {
+    const promises = [];
+    for (let i = 0; i < selectionSize; ++i) {
+        promises.push(Queue.enqueueAndWait(async () => {
+            try {
+                return await unstableFunc(i, i.toString());
+            } catch (error) {
+                console.error(`Error in task ${i}:`, error);
+                throw error;
+            }
+        }));
+    }
+    const results = await Promise.allSettled(promises);
+    console.log('Results:', results);
+    console.log('Awaited tasks:', awaited);
+    await Queue.wait();
+    console.log('Errors catch:', errorsCatch);
+    console.log('Errors throw:', errorsThrow);
+    expect(errorsCatch).toBe(errorsThrow);
+    expect(fatalCount).toBe(0);
 }, selectionSize * 1000);

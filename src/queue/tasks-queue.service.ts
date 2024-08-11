@@ -11,7 +11,7 @@ import { TasksQueueDefaultConfig } from './tasks-queue.default-config';
 export class TasksQueueService {
   private readonly config: ITasksQueueConfig;
   private tasks: TasksQueueElement[] = [];
-  private isActive = false;
+  private isQueueRunning = false;
 
   private currentProcess: Promise<unknown> = EMPTY_FUNC();
   private awaitedTasks: Set<string> = new Set();
@@ -50,7 +50,7 @@ export class TasksQueueService {
   }
 
   public isRunning(): boolean {
-    return this.isActive;
+    return this.isQueueRunning;
   }
 
   // Service
@@ -100,23 +100,28 @@ export class TasksQueueService {
     return result;
   }
 
-  private async waitForTurn<T>(taskId: string): Promise<T | null> {
+  private async waitForTurn<T>(taskId: UUID): Promise<T | null> {
+    // Wait for process
+    await this.currentProcess;
+
+    // Create new
     const process = async () => {
-      await this.currentProcess;
       return await this.processTasks<T>(taskId);
     };
+
+    // Set new process as current
     const waitedProcess = process();
     this.currentProcess = waitedProcess;
     return waitedProcess;
   }
 
   private influxProcess() {
-    if (!this.isActive) this.currentProcess = this.processTasks();
+    if (!this.isQueueRunning) this.currentProcess = this.processTasks();
   }
 
   // noinspection t
-  private async processTasks<T>(waitFor = ''): Promise<T | null> {
-    if (this.isActive) {
+  private async processTasks<T>(waitFor?: UUID): Promise<T | null> {
+    if (this.isQueueRunning) {
       if (waitFor) {
         this.config.logger?.fatal?.(
           `${this.config.label} | ${TasksQueueErrorCodes.BAD_ENTRANCE}`,
@@ -125,13 +130,14 @@ export class TasksQueueService {
       }
       return null;
     }
-    this.isActive = true;
+
+    this.isQueueRunning = true;
 
     this.config.logger?.trace?.(
       `${this.config.label} | Process tasks started. Tasks in queue -> ${this.tasks.length}`,
     );
 
-    const isWaitFor = (taskId: string) => waitFor === taskId;
+    const isWaitFor = (taskId: UUID) => waitFor === taskId;
 
     while (this.tasks.length > 0) {
       if (
@@ -140,7 +146,7 @@ export class TasksQueueService {
       ) {
         if (!waitFor) {
           // Give control of waited task to waitFor function
-          this.isActive = false;
+          this.isQueueRunning = false;
           return null;
         } else {
           this.config.logger?.fatal?.(
@@ -177,7 +183,7 @@ export class TasksQueueService {
           this.config.logger?.error?.(
             `${this.config.label} | Task ${task.id} -> ${e}`,
           );
-          // Retries only for non-waited funcs
+          // Retries only for non-waited tasks
           const retriesCounter = this.attemptCounter.get(task.id) || 0;
           if (retriesCounter < this.config.nonWaitRetriesPerTask) {
             this.config.logger?.trace?.(
@@ -199,7 +205,7 @@ export class TasksQueueService {
       if (isWaitFor(task.id)) {
         this.currentProcess = EMPTY_FUNC(); // Q: What if waiting query would grow? A: an instant assignment in influxProcess()
         this.taskDestructor(task.id);
-        this.isActive = false;
+        this.isQueueRunning = false;
         if (err) {
           throw err;
         } else {
@@ -209,7 +215,7 @@ export class TasksQueueService {
     }
 
     this.currentProcess = EMPTY_FUNC();
-    this.isActive = false;
+    this.isQueueRunning = false;
     return null;
   }
 }
