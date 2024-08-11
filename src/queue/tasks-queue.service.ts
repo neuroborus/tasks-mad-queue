@@ -101,11 +101,10 @@ export class TasksQueueService {
   }
 
   private async waitForTurn<T>(taskId: UUID): Promise<T | null> {
-    // Wait for process
-    await this.currentProcess;
-
     // Create new
     const process = async () => {
+      // Wait for process
+      await this.currentProcess;
       return await this.processTasks<T>(taskId);
     };
 
