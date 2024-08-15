@@ -2,6 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/tasks-mad-queue.svg)](https://badge.fury.io/js/tasks-mad-queue)
 
+## This project is just experiment. Please, use [Bee-queue](https://github.com/bee-queue/bee-queue?tab=readme-ov-file) instead.
 
 ```typescript
   // API
